@@ -6,11 +6,29 @@
   "permissions": [
     "core:default",
     "opener:default",
+    {
+      "identifier": "opener:allow-open-path",
+      "allow": [
+        { "path": "$APPDATA/attachments" },
+        { "path": "$APPDATA/attachments/**" }
+      ]
+    },
     "sql:default",
     "sql:allow-execute",
     "sql:allow-select",
     "fs:default",
+    "fs:allow-appdata-write-recursive",
+    "fs:allow-read-text-file",
+    "fs:allow-write-text-file",
+    "fs:scope-document-recursive",
+    "fs:scope-download-recursive",
+    "fs:scope-desktop-recursive",
+    "fs:scope-home-recursive",
     "dialog:default",
+    "dialog:allow-open",
+    "dialog:allow-save",
+    "dialog:allow-ask",
+    "dialog:allow-confirm",
     "notification:default",
     "store:default",
     "updater:default",

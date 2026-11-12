@@ -13,9 +13,11 @@ import {
 import { SUBJECT_BG } from "../lib/subjectColors";
 import { cn } from "../lib/utils";
 import {
+  EMPTY_DASHBOARD_STATS,
   getDashboardStats,
   getTodayAgenda,
   getUpcomingDeliveries,
+  setDeliveryDone,
   type AgendaItem,
   type DashboardStat,
   type DeliveryItem,
@@ -67,6 +69,11 @@ export function InicioPage() {
         setStats(s);
         setAgenda(a);
         setDeliveries(d);
+      } catch {
+        if (!alive) return;
+        setStats(EMPTY_DASHBOARD_STATS.map((s) => ({ ...s })));
+        setAgenda([]);
+        setDeliveries([]);
       } finally {
         if (alive) setDashLoading(false);
       }
@@ -76,7 +83,41 @@ export function InicioPage() {
     };
   }, []);
 
-  const spotlight = subjects.filter((s) => SHORT_NAMES[s.id]).slice(0, 4);
+  async function handleToggleDelivery(delivery: DeliveryItem) {
+    const nextDone = !delivery.done;
+    // Otimista: ao desmarcar, tira "Concluído" imediatamente (label real vem no refresh)
+    setDeliveries((prev) =>
+      prev.map((d) =>
+        d.id === delivery.id
+          ? {
+              ...d,
+              done: nextDone,
+              when: nextDone ? "Concluído" : "…",
+            }
+          : d,
+      ),
+    );
+    try {
+      await setDeliveryDone(delivery.id, nextDone);
+      const [refreshed, nextStats] = await Promise.all([
+        getUpcomingDeliveries(),
+        getDashboardStats(),
+      ]);
+      setDeliveries(refreshed);
+      setStats(nextStats);
+    } catch {
+      setDeliveries((prev) =>
+        prev.map((d) =>
+          d.id === delivery.id
+            ? { ...d, done: delivery.done, when: delivery.when }
+            : d,
+        ),
+      );
+    }
+  }
+
+  // Qualquer disciplina cadastrada — sem filtrar por seed/Figma
+  const spotlight = subjects.slice(0, 4);
 
   return (
     <div className="space-y-6">
@@ -118,34 +159,50 @@ export function InicioPage() {
         <section className="rounded-2xl border border-bloom-100/80 bg-surface p-5 shadow-sm">
           <div className="mb-4 flex items-center justify-between gap-3">
             <h2 className="text-base font-semibold text-ink">Agenda de hoje</h2>
-            <span className="rounded-full bg-pastel-lavender px-3 py-1 text-xs font-medium text-bloom-700">
-              {todayLabel()}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-pastel-lavender px-3 py-1 text-xs font-medium text-bloom-700">
+                {todayLabel()}
+              </span>
+              <Link
+                to="/grade"
+                className="text-xs font-medium text-bloom-600 hover:text-bloom-700"
+              >
+                Grade →
+              </Link>
+            </div>
           </div>
-          {agenda.length === 0 ? (
+          {dashLoading ? (
+            <StatusMessage>Carregando agenda…</StatusMessage>
+          ) : agenda.length === 0 ? (
             <StatusMessage variant="empty">
-              Nenhuma aula marcada para hoje.
+              Nenhuma aula marcada para hoje.{" "}
+              <Link
+                to="/grade"
+                className="font-medium text-bloom-600 hover:text-bloom-700"
+              >
+                Ver grade
+              </Link>
             </StatusMessage>
           ) : (
             <ul className="space-y-2">
-              {agenda.map((item) => (
+              {agenda.map((slot) => (
                 <li
-                  key={item.id}
+                  key={slot.id}
                   className={cn(
                     "flex items-center gap-3 rounded-xl px-3 py-3",
-                    SUBJECT_BG[item.color],
+                    SUBJECT_BG[slot.color],
                   )}
                 >
                   <span className="w-12 shrink-0 text-sm font-semibold text-ink/80">
-                    {item.time}
+                    {slot.time}
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold text-ink">
-                      {item.title}
+                      {slot.title}
                     </p>
                   </div>
                   <p className="hidden max-w-[45%] truncate text-right text-xs text-muted sm:block">
-                    {item.detail}
+                    {slot.detail}
                   </p>
                 </li>
               ))}
@@ -154,41 +211,81 @@ export function InicioPage() {
         </section>
 
         <section className="rounded-2xl border border-bloom-100/80 bg-surface p-5 shadow-sm">
-          <h2 className="mb-4 text-base font-semibold text-ink">
-            Próximas entregas
-          </h2>
-          {deliveries.length === 0 ? (
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <h2 className="text-base font-semibold text-ink">
+              Próximas entregas
+            </h2>
+            <Link
+              to="/kanban"
+              className="text-xs font-medium text-bloom-600 hover:text-bloom-700"
+            >
+              Kanban →
+            </Link>
+          </div>
+          {dashLoading ? (
+            <StatusMessage>Carregando entregas…</StatusMessage>
+          ) : deliveries.length === 0 ? (
             <StatusMessage variant="empty">
-              Sem entregas próximas. Aproveite para revisar ✿
+              Sem entregas próximas.{" "}
+              <Link
+                to="/kanban"
+                className="font-medium text-bloom-600 hover:text-bloom-700"
+              >
+                Abrir Kanban
+              </Link>
             </StatusMessage>
           ) : (
             <ul className="space-y-3">
-              {deliveries.map((item) => (
-                <li key={item.id} className="flex items-center gap-3">
-                  <span
+              {deliveries.map((delivery) => (
+                <li key={delivery.id} className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => void handleToggleDelivery(delivery)}
                     className={cn(
-                      "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border",
-                      item.done
+                      "flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition",
+                      delivery.done
                         ? "border-bloom-400 bg-bloom-500 text-white"
-                        : "border-bloom-200 bg-surface",
+                        : "border-bloom-200 bg-surface hover:border-bloom-300",
                     )}
-                    aria-hidden
+                    aria-pressed={delivery.done}
+                    aria-label={
+                      delivery.done
+                        ? `Desmarcar ${delivery.title}`
+                        : `Concluir ${delivery.title}`
+                    }
                   >
-                    {item.done ? (
+                    {delivery.done ? (
                       <Check className="h-3 w-3" strokeWidth={3} />
                     ) : null}
-                  </span>
+                  </button>
                   <div className="min-w-0 flex-1">
-                    <p
-                      className={cn(
-                        "text-sm font-medium",
-                        item.done ? "text-muted line-through" : "text-ink",
-                      )}
-                    >
-                      {item.title}
-                    </p>
+                    {delivery.id.startsWith("task:") ? (
+                      <Link
+                        to="/kanban"
+                        className={cn(
+                          "text-sm font-medium hover:text-bloom-700",
+                          delivery.done
+                            ? "text-muted line-through"
+                            : "text-ink",
+                        )}
+                      >
+                        {delivery.title}
+                      </Link>
+                    ) : (
+                      <Link
+                        to="/calendario"
+                        className={cn(
+                          "text-sm font-medium hover:text-bloom-700",
+                          delivery.done
+                            ? "text-muted line-through"
+                            : "text-ink",
+                        )}
+                      >
+                        {delivery.title}
+                      </Link>
+                    )}
                   </div>
-                  <span className="text-xs text-muted">{item.when}</span>
+                  <span className="text-xs text-muted">{delivery.when}</span>
                 </li>
               ))}
             </ul>
@@ -213,7 +310,13 @@ export function InicioPage() {
           <StatusMessage variant="error">{error}</StatusMessage>
         ) : spotlight.length === 0 ? (
           <StatusMessage variant="empty">
-            Nenhuma disciplina ainda. Adicione em Disciplinas.
+            Nenhuma disciplina ainda.{" "}
+            <Link
+              to="/disciplinas"
+              className="font-medium text-bloom-600 hover:text-bloom-700"
+            >
+              Adicionar em Disciplinas
+            </Link>
           </StatusMessage>
         ) : (
           <motion.div

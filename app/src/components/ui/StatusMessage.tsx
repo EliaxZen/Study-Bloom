@@ -1,6 +1,8 @@
+import type { ReactNode } from "react";
+
 type StatusMessageProps = {
   variant?: "loading" | "empty" | "error";
-  children: string;
+  children: ReactNode;
 };
 
 const STYLES = {

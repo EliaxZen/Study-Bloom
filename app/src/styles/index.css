@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/*
+  Tokens compartilhados (P3 accent + P4 light/dark):
+  - Surfaces/text: --color-canvas, --color-surface, --color-ink, --color-muted
+  - Marca: --color-bloom-* (accent sobrescreve 400–900; soft 50–300 no dark vêm daqui)
+  - Pastéis de disciplina: --color-pastel-*
+  Light = defaults em @theme (look pastel intacto).
+*/
 @theme {
   --color-bloom-50: #f8f6fc;
   --color-bloom-100: #f1ecfa;
@@ -11,6 +18,10 @@
   --color-bloom-700: #6649a3;
   --color-bloom-800: #553e86;
   --color-bloom-900: #47356d;
+
+  /* Aliases — sobrescritos em runtime pelo accent */
+  --color-primary: #7c5fbd;
+  --color-accent: #9b7dd1;
 
   --color-ink: #2d2640;
   --color-muted: #6b6280;
@@ -24,6 +35,32 @@
   --color-pastel-blue: #dbeafe;
 
   --font-sans: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+}
+
+/*
+  Dark: mesmas vars semânticas.
+  Soft bloom 50–300: CSS (accent remove inline no dark).
+  Chrome bloom 400–900: ficam no inline do accent.
+*/
+html.dark,
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-bloom-50: #2a2438;
+  --color-bloom-100: #342d45;
+  --color-bloom-200: #453a5c;
+  --color-bloom-300: #6b5a8a;
+
+  --color-ink: #f3eef9;
+  --color-muted: #a99bb8;
+  --color-surface: #231e32;
+  --color-canvas: #16131f;
+
+  --color-pastel-pink: #3d2a35;
+  --color-pastel-mint: #243832;
+  --color-pastel-yellow: #3a3424;
+  --color-pastel-lavender: #2e2940;
+  --color-pastel-blue: #243040;
 }
 
 html,
@@ -79,9 +116,9 @@ body {
 }
 
 .bloom-calendar .fc {
-  --fc-border-color: #ede9fe;
+  --fc-border-color: var(--color-bloom-200);
   --fc-page-bg-color: transparent;
-  --fc-today-bg-color: #f5f3ff;
+  --fc-today-bg-color: var(--color-bloom-50);
   font-family: inherit;
 }
 
@@ -102,6 +139,7 @@ body {
 
 .bloom-calendar .fc .fc-daygrid-day-frame {
   min-height: 3.25rem;
+  overflow: hidden;
 }
 
 @media (min-width: 640px) {
@@ -115,6 +153,7 @@ body {
 .bloom-calendar .fc .fc-daygrid-body,
 .bloom-calendar .fc .fc-daygrid-body table {
   width: 100% !important;
+  max-width: 100%;
 }
 
 .bloom-calendar .fc .fc-daygrid-event {
@@ -137,8 +176,19 @@ body {
 
 .bloom-calendar .fc .fc-daygrid-day-events {
   margin-top: 0.15rem;
+  min-width: 0;
 }
 
 .bloom-calendar .fc .fc-daygrid-day-number {
   padding: 0.35rem;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.bloom-calendar .fc .fc-daygrid-more-link {
+  font-size: 0.65rem;
+  font-weight: 600;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

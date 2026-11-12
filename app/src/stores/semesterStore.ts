@@ -1,22 +1,51 @@
 /**
  * Store do semestre atual
  * -----------------------
- * Exemplo simples de Zustand para a namorada entender o padrão.
+ * Compartilhado entre AppShell, Configurações e demais telas (P22).
+ * Persistido no localStorage.
  */
 
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 import type { Semester } from "../types";
 
 type SemesterState = {
   semester: Semester;
   setSemester: (semester: Semester) => void;
+  updateSemester: (patch: Partial<Pick<Semester, "label" | "course">>) => void;
 };
 
-export const useSemesterStore = create<SemesterState>((set) => ({
-  semester: {
-    id: "2026-2",
-    label: "2026.2",
-    course: "Ciência da Computação",
-  },
-  setSemester: (semester) => set({ semester }),
-}));
+function semesterIdFromLabel(label: string): string {
+  const cleaned = label.trim().replace(/\s+/g, "");
+  return cleaned.length > 0 ? cleaned.replace(/\./g, "-") : "semestre";
+}
+
+export const useSemesterStore = create<SemesterState>()(
+  persist(
+    (set, get) => ({
+      // Seed neutro — o usuário edita no AppShell / Configurações (persistido).
+      semester: {
+        id: "semestre",
+        label: "Semestre",
+        course: "Seu curso",
+      },
+      setSemester: (semester) => set({ semester }),
+      updateSemester: (patch) => {
+        const current = get().semester;
+        const label = patch.label ?? current.label;
+        const course = patch.course ?? current.course;
+        set({
+          semester: {
+            id: semesterIdFromLabel(label),
+            label: label.trim() || current.label,
+            course: course.trim() || current.course,
+          },
+        });
+      },
+    }),
+    {
+      name: "study-bloom-semester",
+      partialize: (state) => ({ semester: state.semester }),
+    },
+  ),
+);

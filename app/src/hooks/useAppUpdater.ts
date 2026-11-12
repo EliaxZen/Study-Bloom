@@ -1,14 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Update } from "@tauri-apps/plugin-updater";
+import { isTauriRuntime } from "../services/notifications";
 
 type UpdateInfo = {
   version: string;
   notes: string | null;
 };
-
-function isTauriRuntime(): boolean {
-  return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
-}
 
 /**
  * Checa atualizações só no desktop Tauri.

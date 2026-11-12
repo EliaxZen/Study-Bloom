@@ -1,12 +1,19 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { listSubjects } from "../services/subjects";
 import type { Subject } from "../types";
 
-/** Carrega a lista de disciplinas (mock → depois SQLite) */
+/** Carrega a lista de disciplinas (persistida em localStorage). */
 export function useSubjects() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const refresh = useCallback(async () => {
+    const data = await listSubjects();
+    setSubjects(data);
+    setError(null);
+    return data;
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -27,5 +34,5 @@ export function useSubjects() {
     };
   }, []);
 
-  return { subjects, loading, error };
+  return { subjects, loading, error, refresh };
 }

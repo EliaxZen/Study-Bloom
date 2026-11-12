@@ -1,6 +1,6 @@
 [package]
 name = "study-bloom"
-version = "0.1.0"
+version = "0.1.1"
 description = "Study Bloom — Organizador Universitário de Ciência da Computação"
 authors = ["EliaxZen"]
 edition = "2024"

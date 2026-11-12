@@ -9,6 +9,7 @@ import {
   KanbanSquare,
   Bell,
   CalendarRange,
+  Settings,
 } from "lucide-react";
 
 export type AppRoute = {
@@ -83,5 +84,12 @@ export const APP_ROUTES: AppRoute[] = [
     icon: Code2,
     title: "Laboratório de estudos",
     subtitle: "Seu espaço para programar e escrever matemática.",
+  },
+  {
+    path: "/configuracoes",
+    label: "Configurações",
+    icon: Settings,
+    title: "Configurações",
+    subtitle: "Semestre, pesos, notificações e tema.",
   },
 ];

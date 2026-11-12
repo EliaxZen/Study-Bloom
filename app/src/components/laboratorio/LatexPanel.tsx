@@ -1,17 +1,24 @@
 import { useMemo } from "react";
 import katex from "katex";
 import "katex/dist/katex.min.css";
+import { Save } from "lucide-react";
 
 type LatexPanelProps = {
   input: string;
   onInputChange: (value: string) => void;
   previewLatex: string;
+  onSave?: () => void;
+  saving?: boolean;
+  dirty?: boolean;
 };
 
 export function LatexPanel({
   input,
   onInputChange,
   previewLatex,
+  onSave,
+  saving = false,
+  dirty = false,
 }: LatexPanelProps) {
   const previewHtml = useMemo(() => {
     try {
@@ -26,7 +33,14 @@ export function LatexPanel({
 
   return (
     <section className="rounded-2xl border border-bloom-100 bg-surface p-4 shadow-sm sm:p-5">
-      <h3 className="mb-4 text-base font-bold text-ink">Editor de LaTeX</h3>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-base font-bold text-ink">Editor de LaTeX</h3>
+        {dirty ? (
+          <span className="rounded-full bg-pastel-pink px-2.5 py-0.5 text-[11px] font-semibold text-bloom-700">
+            editado
+          </span>
+        ) : null}
+      </div>
 
       <label className="block text-xs font-semibold text-muted">
         Expressão de entrada
@@ -45,6 +59,18 @@ export function LatexPanel({
           dangerouslySetInnerHTML={{ __html: previewHtml }}
         />
       </div>
+
+      {onSave ? (
+        <button
+          type="button"
+          onClick={onSave}
+          disabled={saving || !dirty}
+          className="mt-4 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-bloom-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-bloom-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <Save className="h-4 w-4" />
+          {saving ? "Salvando…" : "Salvar fórmula"}
+        </button>
+      ) : null}
     </section>
   );
 }

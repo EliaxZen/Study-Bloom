@@ -5,11 +5,11 @@
  * As páginas usam esses tipos; o banco SQLite vai gravar objetos parecidos.
  */
 
-/** Semestre atual da aluna */
+/** Semestre atual da aluna (editável; valores vêm do semesterStore) */
 export type Semester = {
   id: string;
-  label: string; // ex: "2026.2"
-  course: string; // ex: "Ciência da Computação"
+  label: string; // ex: "2025.1"
+  course: string; // nome do curso informado pela usuária
 };
 
 /** Cores pastel usadas no Figma para disciplinas */
@@ -27,6 +27,8 @@ export type Subject = {
   description: string;
   color: SubjectColor;
   icon: string; // símbolo simples: "∫", "</>", etc.
+  /** Emoji/símbolo decorativo da capa (opcional) */
+  cover?: string;
   materialsCount: number;
 };
 
@@ -58,6 +60,11 @@ export type Reminder = {
   title: string;
   datetime: string; // ISO
   color: SubjectColor;
+  completed: boolean;
+  /** Vínculo opcional com tarefa do Kanban */
+  taskId?: string;
+  /** Vínculo opcional com evento do calendário */
+  eventId?: string;
 };
 
 /** Sessão de foco (Pomodoro) */
@@ -78,22 +85,36 @@ export type GradeEntry = {
   attendancePercent: number;
 };
 
+/** Tipo de evento no calendário acadêmico */
+export type CalendarEventType = "prova" | "entrega" | "aula" | "outro";
+
 /** Evento do calendário acadêmico */
 export type CalendarEvent = {
   id: string;
   title: string;
-  date: string; // ISO date
+  date: string; // ISO date YYYY-MM-DD
   color: SubjectColor;
-  type: "prova" | "entrega" | "aula" | "outro";
+  type: CalendarEventType;
+  /** Alerta prévio habilitado */
+  alertEnabled?: boolean;
+  /** Minutos antes do dia do evento (ex.: 1440 = 1 dia) */
+  alertMinutesBefore?: number;
 };
 
-/** Flashcard (SRS) */
+/** Flashcard (SRS — alinhado a flashcards.ease_factor / interval_days / repetitions) */
 export type Flashcard = {
   id: string;
   deckId: string;
   question: string;
   answer: string;
+  /** Data YYYY-MM-DD; cartão due quando <= hoje */
   nextReviewAt: string;
+  /** Fator de facilidade (SM-2), mínimo 1.3 */
+  easeFactor: number;
+  /** Intervalo atual em dias */
+  intervalDays: number;
+  /** Repetições bem-sucedidas consecutivas (zera no Again) */
+  repetitions: number;
 };
 
 export type FlashcardDeck = {

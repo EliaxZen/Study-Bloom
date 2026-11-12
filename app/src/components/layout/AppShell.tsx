@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
-import { NavLink, useLocation, useOutlet } from "react-router-dom";
+import { Link, NavLink, useLocation, useOutlet } from "react-router-dom";
 import { AnimatePresence, motion } from "motion/react";
-import { ChevronsLeft, ChevronsRight, Heart, Menu, X } from "lucide-react";
+import {
+  ChevronsLeft,
+  ChevronsRight,
+  Heart,
+  Menu,
+  Pencil,
+  Search,
+  X,
+} from "lucide-react";
 import { APP_ROUTES } from "../../constants/navigation";
 import {
   getPageVariants,
@@ -12,9 +20,20 @@ import {
   useReducedMotionPreference,
 } from "../../lib/motion";
 import { cn } from "../../lib/utils";
+import { useFavoritesStore } from "../../stores/favoritesStore";
 import { useSemesterStore } from "../../stores/semesterStore";
-import { useToastStore } from "../../stores/toastStore";
+import { FavoritesPanel } from "../favorites/FavoritesPanel";
+import {
+  compactCourseName,
+} from "../settings/SemesterFields";
+import { SemesterEditModal } from "../settings/SemesterEditModal";
+import { ThemeCustomizer } from "../theme/ThemeCustomizer";
 import { AppToast } from "../ui/AppToast";
+import {
+  GlobalSearch,
+  globalSearchShortcutLabel,
+} from "./GlobalSearch";
+import { ThemeToggle } from "./ThemeToggle";
 
 function useIsLg() {
   const [isLg, setIsLg] = useState(() => {
@@ -39,9 +58,13 @@ export function AppShell() {
   const reduced = useReducedMotionPreference();
   const isLg = useIsLg();
   const semester = useSemesterStore((s) => s.semester);
-  const showToast = useToastStore((s) => s.show);
+  const favoritesCount = useFavoritesStore((s) => s.items.length);
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [favoritesOpen, setFavoritesOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [themeOpen, setThemeOpen] = useState(false);
+  const [semesterModalOpen, setSemesterModalOpen] = useState(false);
   const [routeProgress, setRouteProgress] = useState(0);
 
   /** No mobile o drawer é sempre expandido; rail colapsado só no desktop */
@@ -61,13 +84,18 @@ export function AppShell() {
   const headerSubtitle = isContentPage
     ? "Sua vida acadêmica, um passo de cada vez."
     : current.subtitle;
-  const shortCourse =
+  const useCompactCourse =
     location.pathname.startsWith("/notas") ||
     location.pathname.startsWith("/calendario") ||
     location.pathname.startsWith("/revisao") ||
-    location.pathname.startsWith("/laboratorio");
+    location.pathname.startsWith("/laboratorio") ||
+    location.pathname.startsWith("/configuracoes");
+  const courseLabel = useCompactCourse
+    ? compactCourseName(semester.course)
+    : semester.course;
 
   const press = reduced ? pressableReduced : pressable;
+  const shortcutLabel = globalSearchShortcutLabel();
 
   useEffect(() => {
     setMobileOpen(false);
@@ -76,6 +104,18 @@ export function AppShell() {
   useEffect(() => {
     if (isLg) setMobileOpen(false);
   }, [isLg]);
+
+  /** Atalho global Cmd/Ctrl+K */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey)) return;
+      if (e.key.toLowerCase() !== "k") return;
+      e.preventDefault();
+      setSearchOpen(true);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   /** Fio fino de progresso na troca de rota */
   useEffect(() => {
@@ -223,26 +263,57 @@ export function AppShell() {
             )}
           </motion.button>
 
-          {!railCollapsed ? (
+          {railCollapsed ? (
+            <ThemeToggle compact className="mx-auto hidden lg:flex" />
+          ) : (
             <div className="rounded-2xl bg-pastel-lavender p-4">
-              <p className="text-xs font-semibold text-bloom-700">
-                ✦ Meu semestre
-              </p>
-              <p className="mt-1 text-sm text-ink">
-                {semester.label} ·{" "}
-                {shortCourse ? "Computação" : semester.course}
-              </p>
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-xs font-semibold text-bloom-700">
+                  ✦ Meu semestre
+                </p>
+                <motion.button
+                  type="button"
+                  onClick={() => setSemesterModalOpen(true)}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg text-bloom-600 hover:bg-bloom-100"
+                  aria-label="Editar semestre e curso"
+                  title="Editar"
+                  {...press}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </motion.button>
+              </div>
               <button
                 type="button"
-                onClick={() =>
-                  showToast("Personalização de tema chega em breve ✿")
-                }
-                className="mt-3 min-h-11 text-left text-xs font-medium text-bloom-600 hover:underline lg:min-h-0"
+                onClick={() => setSemesterModalOpen(true)}
+                className="mt-1 w-full text-left text-sm text-ink hover:text-bloom-700"
               >
-                Personalizar tema ↗
+                <span className="block truncate">
+                  {semester.label} · {courseLabel}
+                </span>
               </button>
+              <div className="mt-3 flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => setThemeOpen(true)}
+                  className="min-h-11 text-left text-xs font-medium text-bloom-600 hover:underline lg:min-h-0"
+                >
+                  Personalizar tema ↗
+                </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Link
+                    to="/configuracoes"
+                    className="min-h-11 text-left text-xs font-medium text-muted hover:text-bloom-700 hover:underline lg:min-h-0"
+                  >
+                    Configurações
+                  </Link>
+                  <ThemeToggle
+                    compact
+                    className="ml-auto h-9 w-9 text-bloom-700 hover:bg-white/70 hover:text-bloom-700"
+                  />
+                </div>
+              </div>
             </div>
-          ) : null}
+          )}
         </div>
       </aside>
 
@@ -277,18 +348,68 @@ export function AppShell() {
               <p className="mt-1 text-sm text-muted">{headerSubtitle}</p>
             </div>
           </div>
-          <motion.button
-            type="button"
-            onClick={() =>
-              showToast("Favoritos em breve — guarde matérias e conteúdos")
-            }
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pastel-pink text-bloom-600 shadow-sm sm:h-10 sm:w-10"
-            aria-label="Favoritos"
-            {...press}
-            transition={springSoft}
-          >
-            <Heart className="h-4 w-4 fill-current" />
-          </motion.button>
+          <div className="flex shrink-0 items-center gap-2">
+            <motion.button
+              type="button"
+              onClick={() => setSemesterModalOpen(true)}
+              className="hidden max-w-[12rem] items-center gap-2 rounded-full bg-pastel-lavender px-3 py-1.5 text-left md:flex"
+              aria-label={`Editar semestre ${semester.label}`}
+              title="Editar semestre e curso"
+              {...press}
+              transition={springSoft}
+            >
+              <span className="min-w-0">
+                <span className="block truncate text-xs font-semibold text-bloom-700">
+                  {semester.label}
+                </span>
+                <span className="block truncate text-[11px] text-muted">
+                  {compactCourseName(semester.course, 20)}
+                </span>
+              </span>
+              <Pencil className="h-3.5 w-3.5 shrink-0 text-bloom-600" />
+            </motion.button>
+            <motion.button
+              type="button"
+              onClick={() => setSearchOpen(true)}
+              className="hidden h-10 items-center gap-2 rounded-full border border-bloom-200/80 bg-surface px-3 text-sm text-muted shadow-sm hover:border-bloom-300 hover:text-ink sm:inline-flex"
+              aria-label={`Buscar (${shortcutLabel})`}
+              aria-keyshortcuts="Control+K Meta+K"
+              {...press}
+              transition={springSoft}
+            >
+              <Search className="h-4 w-4 text-bloom-500" />
+              <span className="max-w-[9rem] truncate">Buscar…</span>
+              <kbd className="rounded-md bg-bloom-50 px-1.5 py-0.5 text-[10px] font-semibold text-bloom-700">
+                {shortcutLabel}
+              </kbd>
+            </motion.button>
+            <motion.button
+              type="button"
+              onClick={() => setSearchOpen(true)}
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-bloom-50 text-bloom-600 shadow-sm sm:hidden"
+              aria-label={`Buscar (${shortcutLabel})`}
+              {...press}
+              transition={springSoft}
+            >
+              <Search className="h-4 w-4" />
+            </motion.button>
+            <motion.button
+              type="button"
+              onClick={() => setFavoritesOpen(true)}
+              className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-pastel-pink text-bloom-600 shadow-sm sm:h-10 sm:w-10"
+              aria-label="Favoritos"
+              aria-expanded={favoritesOpen}
+              {...press}
+              transition={springSoft}
+            >
+              <Heart className="h-4 w-4 fill-current" />
+              {favoritesCount > 0 ? (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-bloom-600 px-1 text-[10px] font-bold leading-none text-white">
+                  {favoritesCount > 9 ? "9+" : favoritesCount}
+                </span>
+              ) : null}
+            </motion.button>
+          </div>
         </header>
 
         <div className="relative min-h-0 flex-1 overflow-auto overflow-x-hidden px-4 pb-6 pt-3 md:px-6 md:pb-8 md:pt-4 lg:px-8">
@@ -308,7 +429,20 @@ export function AppShell() {
         </div>
       </main>
 
+      <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <FavoritesPanel
+        open={favoritesOpen}
+        onClose={() => setFavoritesOpen(false)}
+      />
+      <SemesterEditModal
+        open={semesterModalOpen}
+        onClose={() => setSemesterModalOpen(false)}
+      />
       <AppToast />
+      <ThemeCustomizer
+        open={themeOpen}
+        onClose={() => setThemeOpen(false)}
+      />
     </div>
   );
 }
