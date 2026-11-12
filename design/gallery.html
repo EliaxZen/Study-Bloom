@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Study Bloom — Galeria do protótipo</title>
+  <style>
+    :root {
+      --bg: #f6f4fb;
+      --card: #fff;
+      --ink: #2d2640;
+      --muted: #6b6280;
+      --accent: #7c6bc4;
+      --pill: #ebe4ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+    }
+    header {
+      position: sticky; top: 0; z-index: 10;
+      background: rgba(246,244,251,.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid #e6e0f2;
+      padding: 16px 24px;
+      display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
+    }
+    header h1 { margin: 0; font-size: 1.15rem; }
+    header p { margin: 0; color: var(--muted); font-size: .9rem; }
+    nav { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+    nav a {
+      text-decoration: none; color: var(--accent);
+      background: var(--pill); padding: 6px 10px; border-radius: 999px;
+      font-size: .8rem; font-weight: 600;
+    }
+    main { max-width: 1200px; margin: 0 auto; padding: 24px; display: grid; gap: 28px; }
+    section {
+      background: var(--card); border-radius: 18px; padding: 18px;
+      box-shadow: 0 8px 24px rgba(80,60,120,.06);
+    }
+    section h2 { margin: 0 0 6px; font-size: 1.05rem; }
+    section .meta { margin: 0 0 14px; color: var(--muted); font-size: .85rem; }
+    img {
+      width: 100%; height: auto; border-radius: 12px;
+      border: 1px solid #eee8f7; background: #faf9fc;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>study bloom — galeria local</h1>
+      <p>Consulte as telas enquanto desenvolve · pasta design/</p>
+    </div>
+    <nav>
+      <a href="#s00">Overview</a>
+      <a href="#s01">01</a><a href="#s02">02</a><a href="#s03">03</a>
+      <a href="#s04">04</a><a href="#s05">05</a><a href="#s06">06</a>
+      <a href="#s07">07</a><a href="#s08">08</a><a href="#s09">09</a>
+      <a href="#s10">10</a>
+      <a href="spec/prototype-completo.md">Spec</a>
+    </nav>
+  </header>
+  <main>
+    <section id="s00">
+      <h2>00 · Overview do canvas</h2>
+      <p class="meta">Visão geral de todas as frames no Figma</p>
+      <img src="screens/00-overview-canvas.png" alt="Overview canvas Study Bloom" />
+    </section>
+    <section id="s01">
+      <h2>01 · Visão geral (Início)</h2>
+      <p class="meta">node 2:2 · Dashboard diário</p>
+      <img src="screens/01-visao-geral.png" alt="Visão geral" />
+    </section>
+    <section id="s02">
+      <h2>02 · Kanban de tarefas</h2>
+      <p class="meta">node 2:93 · Quadro de atividades</p>
+      <img src="screens/02-kanban.png" alt="Kanban" />
+    </section>
+    <section id="s03">
+      <h2>03 · Grade horária</h2>
+      <p class="meta">node 2:194 · Semana Seg–Sex</p>
+      <img src="screens/03-grade-horaria.png" alt="Grade horária" />
+    </section>
+    <section id="s04">
+      <h2>04 · Minhas disciplinas</h2>
+      <p class="meta">node 2:281 · Biblioteca de matérias</p>
+      <img src="screens/04-disciplinas.png" alt="Disciplinas" />
+    </section>
+    <section id="s05">
+      <h2>05 · Página de conteúdo</h2>
+      <p class="meta">node 2:353 · Anotações + arquivos</p>
+      <img src="screens/05-pagina-conteudo.png" alt="Página de conteúdo" />
+    </section>
+    <section id="s06">
+      <h2>06 · Lembretes e foco</h2>
+      <p class="meta">node 2:416 · Lembretes + Pomodoro 25:00</p>
+      <img src="screens/06-lembretes-foco.png" alt="Lembretes e foco" />
+    </section>
+    <section id="s07">
+      <h2>07 · Notas e frequência</h2>
+      <p class="meta">node 5:2 · Médias + presença</p>
+      <img src="screens/07-notas-frequencia.png" alt="Notas e frequência" />
+    </section>
+    <section id="s08">
+      <h2>08 · Calendário acadêmico</h2>
+      <p class="meta">node 5:108 · Mês + próximos eventos</p>
+      <img src="screens/08-calendario.png" alt="Calendário" />
+    </section>
+    <section id="s09">
+      <h2>09 · Revisão e flashcards</h2>
+      <p class="meta">node 5:255 · SRS / revisão inteligente</p>
+      <img src="screens/09-revisao-flashcards.png" alt="Flashcards" />
+    </section>
+    <section id="s10">
+      <h2>10 · Editor de código e LaTeX</h2>
+      <p class="meta">node 5:340 · Laboratório de estudos</p>
+      <img src="screens/10-editor-codigo-latex.png" alt="Editor" />
+    </section>
+  </main>
+</body>
+</html>

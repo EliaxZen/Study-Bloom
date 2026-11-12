@@ -1,0 +1,11 @@
+{
+  "version": "0.1.1",
+  "notes": "Correções e melhorias no Study Bloom.\nSuas anotações e tarefas continuam salvas.",
+  "pub_date": "2026-11-11T21:00:00Z",
+  "platforms": {
+    "windows-x86_64": {
+      "signature": "COLE_AQUI_O_CONTEUDO_DO_ARQUIVO_.sig",
+      "url": "https://github.com/EliaxZen/Study-Bloom/releases/download/v0.1.1/Study.Bloom_0.1.1_x64-setup.exe"
+    }
+  }
+}
